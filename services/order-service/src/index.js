@@ -7,5 +7,5 @@ app.get('/', (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Auth service running on port ${port}`);
+  console.log(`Auth service running on ports ${port}`);
 });
