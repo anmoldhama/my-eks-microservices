@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: auth-service
-          image: anmol-dhama/auth-service:latest
+          image: anmoldhama/auth-service:latest  # ✅ Docker Hub image
           ports:
             - containerPort: 3000
 ---

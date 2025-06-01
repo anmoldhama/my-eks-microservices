@@ -10,8 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      REGISTRY: ghcr.io
-      IMAGE_NAMESPACE: anmoldhama
+      IMAGE_NAMESPACE: anmoldhama  # Docker Hub username
 
     steps:
       - name: Checkout code
@@ -25,21 +24,24 @@ jobs:
       - name: Install dependencies
         run: yarn install
 
+      - name: Login to Docker Hub
+        run: |
+          echo "Translam@2" | docker login -u "anmoldhama" --password-stdin
+
       - name: Build and push auth-service image
         run: |
-          docker build -t $REGISTRY/$IMAGE_NAMESPACE/auth-service:latest ./services/auth-service
-          echo ${{ secrets.GITHUB_TOKEN }} | docker login $REGISTRY -u ${{ github.actor }} --password-stdin
-          docker push $REGISTRY/$IMAGE_NAMESPACE/auth-service:latest
+          docker build -t $IMAGE_NAMESPACE/auth-service:latest ./services/auth-service
+          docker push $IMAGE_NAMESPACE/auth-service:latest
 
       - name: Build and push order-service image
         run: |
-          docker build -t $REGISTRY/$IMAGE_NAMESPACE/order-service:latest ./services/order-service
-          docker push $REGISTRY/$IMAGE_NAMESPACE/order-service:latest
+          docker build -t $IMAGE_NAMESPACE/order-service:latest ./services/order-service
+          docker push $IMAGE_NAMESPACE/order-service:latest
 
       - name: Build and push payment-service image
         run: |
-          docker build -t $REGISTRY/$IMAGE_NAMESPACE/payment-service:latest ./services/payment-service
-          docker push $REGISTRY/$IMAGE_NAMESPACE/payment-service:latest
+          docker build -t $IMAGE_NAMESPACE/payment-service:latest ./services/payment-service
+          docker push $IMAGE_NAMESPACE/payment-service:latest
 
   deploy_to_k8s:
     needs: build_and_push
