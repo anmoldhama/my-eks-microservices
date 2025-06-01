@@ -26,7 +26,7 @@ jobs:
 
       - name: Login to Docker Hub
         run: |
-          echo "Translam@2" | docker login -u "anmoldhama" --password-stdin
+          echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
 
       - name: Build and push auth-service image
         run: |
