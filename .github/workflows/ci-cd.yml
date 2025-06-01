@@ -1,0 +1,73 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build_and_push:
+    runs-on: ubuntu-latest
+
+    env:
+      REGISTRY: ghcr.io
+      IMAGE_NAMESPACE: anmoldhama
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Build and push auth-service image
+        run: |
+          docker build -t $REGISTRY/$IMAGE_NAMESPACE/auth-service:latest ./services/auth-service
+          echo ${{ secrets.GITHUB_TOKEN }} | docker login $REGISTRY -u ${{ github.actor }} --password-stdin
+          docker push $REGISTRY/$IMAGE_NAMESPACE/auth-service:latest
+
+      - name: Build and push order-service image
+        run: |
+          docker build -t $REGISTRY/$IMAGE_NAMESPACE/order-service:latest ./services/order-service
+          docker push $REGISTRY/$IMAGE_NAMESPACE/order-service:latest
+
+      - name: Build and push payment-service image
+        run: |
+          docker build -t $REGISTRY/$IMAGE_NAMESPACE/payment-service:latest ./services/payment-service
+          docker push $REGISTRY/$IMAGE_NAMESPACE/payment-service:latest
+
+  deploy_to_k8s:
+    needs: build_and_push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS CLI
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.27.1'
+
+      - name: Update kubeconfig for EKS
+        run: |
+          aws eks update-kubeconfig --name my-first-cluster --region ap-south-1
+
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl apply -f k8s/namespace.yaml
+          kubectl apply -f k8s/auth-service-deployment.yaml
+          kubectl apply -f k8s/order-service-deployment.yaml
+          kubectl apply -f k8s/payment-service-deployment.yaml
