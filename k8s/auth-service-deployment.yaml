@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: auth-service
-          image: anmoldhama/auth-service:latest
+          image: anmol-dhama/auth-service:latest
           ports:
             - containerPort: 3000
 ---

@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: payment-service
-          image: anmoldhama/payment-service:latest
+          image: anmol-dhama/payment-service:latest
           ports:
             - containerPort: 3002
 ---
